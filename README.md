@@ -109,7 +109,7 @@ const handleFilePick = async () => {
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## Contact
-For any inquiries, feel free to reach out at `your.email@example.com`.
+For any inquiries, feel free to reach out at `shravanrohane19@gmail.com`.
 
 ---
 
