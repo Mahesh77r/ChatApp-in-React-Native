@@ -1,7 +1,3 @@
-Here's a sample `README.md` for your React Native Chat App using Socket.io:
-
----
-
 # React Native Chat Application
 
 ## Overview
@@ -32,8 +28,8 @@ Before running this project, make sure you have the following installed:
 
 ### 1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/chat-app.git
-cd chat-app
+git clone https://github.com/Mahesh77r/ChatApp-in-React-Native.git
+cd ChatApp-in-React-Native
 ```
 
 ### 2. Install dependencies:
