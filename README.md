@@ -110,7 +110,3 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Contact
 For any inquiries, feel free to reach out at `shravanrohane19@gmail.com`.
-
----
-
-You can customize this `README.md` based on your specific features and backend setup. Make sure to include any additional dependencies or unique aspects of your project.
