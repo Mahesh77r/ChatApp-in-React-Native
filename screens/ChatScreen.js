@@ -4,7 +4,8 @@ import io from 'socket.io-client';
 import DocumentPicker from 'react-native-document-picker';
 import AsyncStorage from '@react-native-async-storage/async-storage'; // Use AsyncStorage for React Native
 
-const socket = io('http://192.168.1.12:8000'); // Replace with your backend URL
+
+const socket = io('http://192.168.1.20:8000'); // Replace with your backend URL
 
 const ChatScreen = ({ route }) => {
   const { id, userName, userId, roomId, talkInGroup,roomName } = route.params; // Receiving group or user info
@@ -12,22 +13,26 @@ const ChatScreen = ({ route }) => {
   const [messages, setMessages] = useState([]);
 
   useEffect(() => {
-    fetchMessages()
+    fetchMessages();
+  
     // Listen for new messages
     socket.on('loadMessages', (message) => {
-      // Check if message has valid content and id before updating the state
-      if (message) {
-        setMessages((prevMessages) => [...prevMessages, message]);
+      
+      // Check if message.messages is an array
+      if (Array.isArray(message.messages)) {
+        setMessages(message.messages);
       } else {
-        console.error('Invalid message received:', message);
+        console.error('Invalid message format:', message.messages);
       }
     });
-
+  
     return () => {
       // Cleanup listeners when component unmounts
       socket.off('loadMessages');
+      setMessage(); // Make sure to handle this appropriately
     };
   }, []);
+  
 
   // Function to fetch previous messages between two users or within a group
   const fetchMessages = async () => {
@@ -44,7 +49,8 @@ const ChatScreen = ({ route }) => {
 
   const handleSend = async () => {
     if (message.trim()) {
-      const senderId = await AsyncStorage.getItem('id'); // Await AsyncStorage call
+      const senderId = await AsyncStorage.getItem('id'); 
+      
       const messageData = {
         sender: senderId, // Replace with actual sender ID from AsyncStorage
         content: message,
@@ -92,7 +98,7 @@ const ChatScreen = ({ route }) => {
         data={messages}
         keyExtractor={(item) => item._id}
         renderItem={({ item }) => (
-          <View style={styles.messageContainer}>
+          <View style={styles.messageContainer} key={item._id}>
             {item.content ? (
               <Text>{item.content}</Text> // Render message content
             ) : (

@@ -5,8 +5,8 @@ import { loginUserNew } from '../service/authService'; // Assuming you have this
 
 const LoginScreen = ({ navigation }) => {
   const [loginData, setLoginData] = useState({
-    email: '',
-    password: '',
+    EmployeeID: '',
+    Password: '',
   });
   
   const [errorMessage, setErrorMessage] = useState('');
@@ -30,21 +30,22 @@ const LoginScreen = ({ navigation }) => {
       const res = await loginUserNew(loginData, headers);
 
       if (res.status === 200) {
-        const token = res.data.user.token;
-        const userId = res.data.user._id;
-        const userName = res.data.user.name;
+        const token = res.data.token;
+        const userId = res.data.loggedUser._id;
+        const userName = res.data.loggedUser.FirstName;
+        const dept = res.data.loggedUser.Department;
 
         // Store login details in AsyncStorage (React Native's version of localStorage)
         await AsyncStorage.setItem('jwtToken', token);
         await AsyncStorage.setItem('name', userName);
-        console.log(userId)
+        await AsyncStorage.setItem('dept', dept);
         await AsyncStorage.setItem('id', userId);
 
         // Navigate to UserList page after successful login
         navigation.navigate('UserList');
       } 
       else {
-        setErrorMessage('Email or Password is wrong.');
+        setErrorMessage('EmployeeID or Password is wrong.');
       }
     } catch (error) {
       console.error('Error during login:', error);
@@ -58,18 +59,17 @@ const LoginScreen = ({ navigation }) => {
 
       <TextInput
         style={styles.input}
-        placeholder="Email"
-        value={loginData.email}
-        onChangeText={(value) => handleInputChange('email', value)}
-        keyboardType="email-address"
+        placeholder="Employee ID"
+        value={loginData.EmployeeID}
+        onChangeText={(value) => handleInputChange('EmployeeID', value)}
         autoCapitalize="none"
       />
 
         <TextInput
           style={styles.input}
           placeholder="Password"
-          value={loginData.password}
-          onChangeText={(value) => handleInputChange('password', value)}
+          value={loginData.Password}
+          onChangeText={(value) => handleInputChange('Password', value)}
           autoCapitalize="none"
         />
 

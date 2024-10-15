@@ -3,7 +3,7 @@ import { View, Text, FlatList, TouchableOpacity, StyleSheet } from 'react-native
 import io from 'socket.io-client'; // Import Socket.io
 import AsyncStorage from '@react-native-async-storage/async-storage'; // Use AsyncStorage for React Native
 
-const socket = io('http://192.168.1.12:8000/'); // Replace with your server's Socket.io endpoint
+const socket = io('http://192.168.1.20:8000'); // Replace with your server's Socket.io endpoint
 
 const UserListScreen = ({ navigation }) => {
   const [users, setUsers] = useState([]);
@@ -17,9 +17,9 @@ const UserListScreen = ({ navigation }) => {
   useEffect(() => {
     const fetchUsers = async () => {
       const id = await AsyncStorage.getItem('id');
+      const dept = await AsyncStorage.getItem('dept');
       setUserId(id)
-      socket.emit('loadUser');
-      console.log(id); 
+      socket.emit('loadUserByDepartment',{department:dept});
     };
   
     const fetchGroups = async () => {
@@ -30,22 +30,22 @@ const UserListScreen = ({ navigation }) => {
     fetchUsers();
     fetchGroups();
   
-    socket.on('loadUser', async (loadedUsers) => {
+    socket.on('loadUserByDepartment', async (loadedUsers) => {
+      loadedUsers = loadedUsers.Users
       const id = await AsyncStorage.getItem('id');
-      const filteredUsers = loadedUsers.filter(user => user._id !== id);
+      const filteredUsers = loadedUsers.filter(user => user._id.toString() !== id);
       setUsers(filteredUsers);
     });
   
     socket.on('loadGroupChat', (chatRooms) => {
-
-      if (rooms.length === 0) {
+      if (chatRooms.length === 0) {
         console.log('No rooms loaded');
       }
-      setRooms(chatRooms);
+      setRooms(chatRooms.chatRooms);
     });
   
     return () => {
-      socket.off('loadUser');
+      socket.off('loadUserByDepartment');
       socket.off('loadGroupChat');
     };
   }, []);
@@ -55,24 +55,31 @@ const UserListScreen = ({ navigation }) => {
 
   const handleUserPress = (user) => {
     setTalkInGroup(false); // Single chat
-    navigation.navigate('Chat', { id:userId,userName: user.name, userId: user._id, talkInGroup: talkInGroup });
+    navigation.navigate('Chat', { id:userId,userName: `${user.FirstName} ${user.LastName}`, userId: user._id, talkInGroup: talkInGroup });
   };
 
   const handleRoomPress = (room) => {
-    
     setTalkInGroup(true); // Group chat
     navigation.navigate('Chat', { id:userId,roomName: room.roomName, roomId: room._id, roomMembers: room.members, talkInGroup: talkInGroup });
   };
 
+ 
+  
+  
+
   return (
     <View style={styles.container}>
+      
+
+
+
       <Text style={styles.title}>Users and Groups</Text>
       <FlatList
         data={users}
         keyExtractor={(item) => item._id}
         renderItem={({ item }) => (
-          <TouchableOpacity onPress={() => handleUserPress(item)}>
-            <Text style={styles.user}>{item.name}</Text>
+          <TouchableOpacity onPress={() => handleUserPress(item)} key={item._id}>
+            <Text style={styles.user} key={item._id}>{item.FirstName} {item.LastName}</Text>
           </TouchableOpacity>
         )}
       />
@@ -81,8 +88,8 @@ const UserListScreen = ({ navigation }) => {
         data={rooms}
         keyExtractor={(item) => item._id}
         renderItem={({ item }) => (
-          <TouchableOpacity onPress={() => handleRoomPress(item)}>
-            <Text style={styles.group}>{item.roomName}</Text>
+          <TouchableOpacity onPress={() => handleRoomPress(item)} key={item._id}>
+            <Text style={styles.group} key={item._id} >{item.roomName}</Text>
           </TouchableOpacity>
         )}
       />
@@ -120,3 +127,6 @@ const styles = StyleSheet.create({
 });
 
 export default UserListScreen;
+
+
+

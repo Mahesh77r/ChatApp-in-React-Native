@@ -11,7 +11,7 @@ const getHeader = () =>{
 
 // Create an Axios instance with default settings
 const apiClient = axios.create({
-  baseURL: 'http://192.168.1.12:8000', 
+  baseURL: 'http://192.168.1.20:8000/api', 
   timeout: 5000, 
   headers: getHeader()
 });
@@ -33,7 +33,7 @@ const handleError = (error) => {
 
 export const loginUserNew = async (data, headers = {})=>{
     try {
-        const endpoint = `/login`
+        const endpoint = `/user/AllEmployeeLogin`
         const response = await apiClient.post(endpoint, data, { headers});
         return response;
       } catch (error) {
