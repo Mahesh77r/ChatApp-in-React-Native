@@ -2,70 +2,108 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, Button, FlatList, StyleSheet } from 'react-native';
 import io from 'socket.io-client';
 import DocumentPicker from 'react-native-document-picker';
-import AsyncStorage from '@react-native-async-storage/async-storage'; // Use AsyncStorage for React Native
+import AsyncStorage from '@react-native-async-storage/async-storage';  
+import messaging from '@react-native-firebase/messaging';
 
-
-const socket = io('http://192.168.1.20:8000'); // Replace with your backend URL
+const socket = io('http://192.168.1.25:8000'); // Update IP if necessary
 
 const ChatScreen = ({ route }) => {
-  const { id, userName, userId, roomId, talkInGroup,roomName } = route.params; // Receiving group or user info
-  const [message, setMessage] = useState('');
+  const { id, userName, userId, roomId, talkInGroup, roomName } = route.params; 
   const [messages, setMessages] = useState([]);
+  const [message, setMessage] = useState('');
+  const [fcmToken, setfcmToken] = useState('');
 
   useEffect(() => {
     fetchMessages();
-  
-    // Listen for new messages
     socket.on('loadMessages', (message) => {
-      
-      // Check if message.messages is an array
       if (Array.isArray(message.messages)) {
         setMessages(message.messages);
+        // setMessages((prevMessages) => [...prevMessages, newMessage]);
       } else {
         console.error('Invalid message format:', message.messages);
       }
     });
-  
+
     return () => {
-      // Cleanup listeners when component unmounts
       socket.off('loadMessages');
-      setMessage(); // Make sure to handle this appropriately
+      setMessage('');
     };
+  }, []);
+
+// push notification 
+  useEffect(() => {
+    // Request permission to send notifications
+    const requestPermission = async () => {
+      const authStatus = await messaging().requestPermission();
+      const enabled =
+        authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
+        authStatus === messaging.AuthorizationStatus.PROVISIONAL;
+  
+      if (enabled) {
+        console.log('Authorization status:', authStatus);
+        // Now that permission is granted, get the token
+        getFcmToken();
+      }
+    };
+  
+    // Get the device's FCM token
+    const getFcmToken = async () => {
+      try {
+        const fcmToken = await messaging().getToken();
+        if (fcmToken) {
+          setfcmToken(fcmToken)
+          console.log('FCM Token:', fcmToken);
+          // You can send this token to your backend server to store and use for push notifications
+          // e.g., sendToServer(fcmToken);
+        } else {
+          console.log('No token received');
+        }
+      } catch (error) {
+        console.error('Error fetching FCM token:', error);
+      }
+    };
+  
+    // Call the requestPermission function on component mount
+    requestPermission();
   }, []);
   
 
-  // Function to fetch previous messages between two users or within a group
+
   const fetchMessages = async () => {
     socket.emit('loadMessages', {
       sender: id,
-      receiver: talkInGroup ? roomId : userId, // Send room ID for group, user ID for single chat
-      // type: talkInGroup,
+      receiver: talkInGroup ? roomId : userId, 
+      type: talkInGroup,
     });
 
     socket.on('loadMessages', (loadedMessages) => {
-      setMessages(loadedMessages); // Set messages in state
+      setMessages(loadedMessages); 
     });
   };
 
   const handleSend = async () => {
     if (message.trim()) {
-      const senderId = await AsyncStorage.getItem('id'); 
+      const senderId = await AsyncStorage.getItem('id'); // Fetch the logged-in user's ID
       
       const messageData = {
-        sender: senderId, // Replace with actual sender ID from AsyncStorage
+        sender: senderId, 
         content: message,
-        receiver: talkInGroup ? roomId : userId, // Send message to the room if it's a group chat
-        type: talkInGroup ? '' : 'one', // Differentiate between one-on-one and group chat
+        receiver: talkInGroup ? roomId : userId, 
+        fcmtoken:fcmToken,
+        type: talkInGroup ? 'group' : 'one',  
       };
 
-      // Emit message to the server
+      // Send the message to the backend via Socket.io
       socket.emit('sendMessage', messageData);
 
-      // Update local state
+      // Add the message locally
       setMessages([...messages, messageData]);
       setMessage('');
+
     }
   };
+
+  
 
   const handleFilePick = async () => {
     try {
@@ -73,10 +111,10 @@ const ChatScreen = ({ route }) => {
         type: [DocumentPicker.types.allFiles],
       });
 
-      const senderId = await AsyncStorage.getItem('id'); // Await AsyncStorage call
+      const senderId = await AsyncStorage.getItem('id');
       const fileData = {
-        file: result, // This will be your selected file data
-        sender: senderId, // Replace with actual sender ID from AsyncStorage
+        file: result, 
+        sender: senderId, 
         receiver: talkInGroup ? roomId : userId,
         type: talkInGroup ? 'group' : 'one',
       };
@@ -100,16 +138,15 @@ const ChatScreen = ({ route }) => {
         renderItem={({ item }) => (
           <View style={styles.messageContainer} key={item._id}>
             {item.content ? (
-              <Text>{item.content}</Text> // Render message content
+              <Text key={item._id}>{item.content}</Text> 
             ) : (
-              <Text>File attached</Text> // Placeholder for file attachments
+              <Text key={item._id}>File attached</Text> 
             )}
           </View>
         )}
       />
 
-
-      <View style={styles.inputContainer}>
+      <View style={styles.inputContainer} >
         <TextInput
           style={styles.input}
           placeholder="Type a message..."

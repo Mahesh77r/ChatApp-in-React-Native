@@ -11,7 +11,7 @@ const getHeader = () =>{
 
 // Create an Axios instance with default settings
 const apiClient = axios.create({
-  baseURL: 'http://192.168.1.20:8000/api', 
+  baseURL: 'http://192.168.1.25:8000/api', 
   timeout: 5000, 
   headers: getHeader()
 });
