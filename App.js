@@ -22,8 +22,6 @@ export default function App() {
         authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
         authStatus === messaging.AuthorizationStatus.PROVISIONAL;
   
-
-        
       if (enabled) {
         getFcmToken();
       }
