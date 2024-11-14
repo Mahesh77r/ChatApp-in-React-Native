@@ -5,7 +5,7 @@ import DocumentPicker from 'react-native-document-picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';  
 import messaging from '@react-native-firebase/messaging';
 
-const socket = io('http://192.168.1.25:8000'); // Update IP if necessary
+const socket = io('http://192.168.1.120:8000'); 
 
 const ChatScreen = ({ route }) => {
   const { id, userName, userId, roomId, talkInGroup, roomName } = route.params; 
@@ -88,8 +88,7 @@ const ChatScreen = ({ route }) => {
       const messageData = {
         sender: senderId, 
         content: message,
-        receiver: talkInGroup ? roomId : userId, 
-        fcmtoken:fcmToken,
+        receiver: talkInGroup ? roomId : userId,
         type: talkInGroup ? 'group' : 'one',  
       };
 

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, TextInput, Button, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage'; // Use AsyncStorage for React Native
 import { loginUserNew } from '../service/authService'; // Assuming you have this function in your auth service
-
+import { getFcmToken, requestUserPermission } from '../service/firebase'
 const LoginScreen = ({ navigation }) => {
   const [loginData, setLoginData] = useState({
     EmployeeID: '',
@@ -10,8 +10,6 @@ const LoginScreen = ({ navigation }) => {
   });
   
   const [errorMessage, setErrorMessage] = useState('');
-
-
 
   const handleInputChange = (name, value) => {
     setLoginData({
@@ -21,27 +19,28 @@ const LoginScreen = ({ navigation }) => {
   };
 
   const loginHandler = async () => {
-    // This will be equivalent to `e.preventDefault()` in React web
     try {
-      // Simulating toast-like behavior by clearing error messages before login
+      const Fcmtoken = await getFcmToken()
       setErrorMessage('');
-      // Assume loginUserNew is a service function that handles API calls for login
-      const headers = {}; // Add headers if necessary
-      const res = await loginUserNew(loginData, headers);
+      const loginDataWithToken = {
+        ...loginData,
+        FCMToken:Fcmtoken
+      }
+      const headers = {}; 
+      const res = await loginUserNew(loginDataWithToken, headers);
 
       if (res.status === 200) {
         const token = res.data.token;
         const userId = res.data.loggedUser._id;
         const userName = res.data.loggedUser.FirstName;
         const dept = res.data.loggedUser.Department;
-
-        // Store login details in AsyncStorage (React Native's version of localStorage)
+        
         await AsyncStorage.setItem('jwtToken', token);
         await AsyncStorage.setItem('name', userName);
         await AsyncStorage.setItem('dept', dept);
         await AsyncStorage.setItem('id', userId);
 
-        // Navigate to UserList page after successful login
+        
         navigation.navigate('UserList');
       } 
       else {
@@ -111,3 +110,5 @@ const styles = StyleSheet.create({
 });
 
 export default LoginScreen;
+
+

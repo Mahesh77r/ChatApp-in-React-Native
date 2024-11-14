@@ -3,7 +3,7 @@ import { View, Text, FlatList, TouchableOpacity, StyleSheet } from 'react-native
 import io from 'socket.io-client'; // Import Socket.io
 import AsyncStorage from '@react-native-async-storage/async-storage'; 
 
-const socket = io('http://192.168.1.25:8000'); // Replace with your server's Socket.io endpoint
+const socket = io('http://192.168.1.120:8000'); // Replace with your server's Socket.io endpoint
 
 const UserListScreen = ({ navigation }) => {
   const [users, setUsers] = useState([]);
